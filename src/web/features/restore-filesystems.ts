@@ -2,11 +2,20 @@ import vscode, { ExtensionContext } from "vscode";
 import { MemFS } from "../services/filesystem-provider";
 import { FilesystemsState, Address, FileSource } from "../types";
 
-export default function restoreFilesystems(filesystems: FilesystemsState, context: vscode.ExtensionContext) {
+export default function restoreFilesystems(filesystems: FilesystemsState, context: vscode.ExtensionContext, alreadyRegistered: Address[]): Address[] {
   try {
+    const registeredSchemes: Address[] = []
+
+    console.log('Already registered', alreadyRegistered);
+
     if (filesystems.size > 0) {
       vscode.workspace.workspaceFolders?.forEach(workspace => {
         const address = workspace.uri.scheme as Address;
+
+        if (alreadyRegistered.includes(address)) {
+          return;
+        }
+        registeredSchemes.push(address);
 
         if (filesystems.has(address)) {
           const { sources } = filesystems.get(address)!;
@@ -16,6 +25,9 @@ export default function restoreFilesystems(filesystems: FilesystemsState, contex
         }
       });
     }
+
+    console.log('Restored filesystems', registeredSchemes);
+    return registeredSchemes;
   } catch (e: any) {
     console.log('Restoring filesystems error');
     console.error(e);
@@ -23,6 +35,7 @@ export default function restoreFilesystems(filesystems: FilesystemsState, contex
       console.log('Restoring filesystems error 2');
       vscode.window.showErrorMessage(e.toString());
     }
+    return [];
   }
 }
 

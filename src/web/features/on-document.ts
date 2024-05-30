@@ -45,26 +45,33 @@ async function displayPropertiesValues(doc: TextDocument, context: ExtensionCont
     const properties = getPropertyDeclarations(ast);
     console.log("Properties", properties);
 
-    const primitiveProperties = getPrimitiveProperties(properties);
+    const publicPrimitiveProperties = getPrimitiveProperties(properties).filter(property => property.visibility === 'public');
 
-    console.log("Primitive Properties", primitiveProperties);
+    console.log("Public primitive Properties", publicPrimitiveProperties);
 
     const rpcService = new RpcService(adapter.chain!);
     const contractAddress = doc.uri.scheme as Address;
     const decorationsArray: vscode.DecorationOptions[] = [];
 
-    for (const property of primitiveProperties) {
+    for (const property of publicPrimitiveProperties) {
       const value = await rpcService.getPropertyValue(contractAddress, property.name, (property.typeName! as TypeName & { name: string }).name);
       
       const startIdx = parseInt(property.src.split(':')[0]);
       const start = doc.positionAt(startIdx);
       const end = new Position(start.line, doc.lineAt(start.line).text.length);
       const range = new vscode.Range(start, end);
+      let hoverMessage;
+
+      if (property.typeName && (property.typeName as TypeName & { name: string }).name === 'address') {
+        hoverMessage = new vscode.MarkdownString(`Address: [${value}](command:contracts-voyager.openContract?${encodeURIComponent(JSON.stringify({ address: value, adapterId }))})`);
+        hoverMessage.isTrusted = true;
+      }
 
       let decoration: DecorationOptions = {
         range,
+        hoverMessage,
         renderOptions: {
-          after: { contentText: `    ${value}`, },
+          after: { contentText: `    ${value}`,  },
         },
       };
       decorationsArray.push(decoration);

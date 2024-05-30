@@ -6,8 +6,10 @@ import openContract from './features/open-contract';
 import restoreFilesystems from './features/restore-filesystems';
 import onDocument from './features/on-document';
 import { decorationType } from './utils/decoration-style';
+import OpenContractParams from './types/open-contract-params';
 
 let filesystems: FilesystemsState = new Map();
+let registeredSchemes: Address[] = [];
 let decorations = new Map<vscode.Uri, vscode.DecorationOptions[]>();
 
 // This method is called when your extension is activated
@@ -15,7 +17,7 @@ let decorations = new Map<vscode.Uri, vscode.DecorationOptions[]>();
 export function activate(context: vscode.ExtensionContext) {
 	filesystems = new Map(context.globalState.get('filesystems') ?? []);
 	console.log('filesystems', Array.from(filesystems.entries()));
-	restoreFilesystems(filesystems, context);
+	registeredSchemes = registeredSchemes.concat(restoreFilesystems(filesystems, context, registeredSchemes));
 
 	// Free state if the folder is removed
 	context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(({ added, removed }) => {
@@ -26,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
 			filesystems.delete(address);
 		});
 		if (added.length > 0) {
-			restoreFilesystems(filesystems, context);
+			registeredSchemes = registeredSchemes.concat(restoreFilesystems(filesystems, context, registeredSchemes));
 		}
 		context.workspaceState.update('filesystems', Array.from(filesystems.entries()));
 	}));
@@ -54,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	
-	context.subscriptions.push(vscode.commands.registerCommand('contracts-voyager.openContract', async () => openContract(filesystems, context)));
+	context.subscriptions.push(vscode.commands.registerCommand('contracts-voyager.openContract', async (params?: OpenContractParams) => openContract(filesystems, context, params)));
 }
 
 // This method is called when your extension is deactivated

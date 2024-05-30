@@ -1,11 +1,20 @@
 import vscode, { ExtensionContext } from "vscode";
-import adapters, { IAdapter } from "../adapters";
+import adapters, { IAdapter, getAdapter } from "../adapters";
 import { Address } from "../types/address";
 import { FilesystemsState } from "../types";
 
-export default async function openContract(filesystems: FilesystemsState, context: ExtensionContext) {
+export default async function openContract(filesystems: FilesystemsState, context: ExtensionContext, params?: { address: Address, adapterId: number }) {
   try {
-    const { adapter, address } = await getContractSelection();
+    let adapter, address;
+
+    if (params && params.address && params.adapterId !== undefined) {
+      adapter = getAdapter(params.adapterId)!;
+      address = params.address;
+    } else {
+      const selection = await getContractSelection();
+      adapter = selection.adapter;
+      address = selection.address;
+    }
     const sources = await adapter.getSources(address);
     const mainFile = sources.find(source => source.name !== null);
     const adapterIndex = adapters.indexOf(adapter);
@@ -23,7 +32,7 @@ export default async function openContract(filesystems: FilesystemsState, contex
 
 function getContractSelection(): Promise<{ adapter: IAdapter, address: Address }> {
   return new Promise((resolve, reject) => {
-    vscode.window.showInputBox({ prompt: 'Enter the contract address' }).then(address => {
+    vscode.window.showInputBox({ prompt: 'Enter the contract address', ignoreFocusOut: true }).then(address => {
       if (!address) {
         reject();
         return;
@@ -39,7 +48,7 @@ function getContractSelection(): Promise<{ adapter: IAdapter, address: Address }
         adapter,
       }));
 
-      vscode.window.showQuickPick(picks).then((pick) => {
+      vscode.window.showQuickPick(picks, { ignoreFocusOut: true }).then((pick) => {
         if (!pick) {
           reject('No adapter selected');
           return;
