@@ -2,7 +2,7 @@
 
 This extension allows to navigates verified smart-contracts sources files on multiple blockchains and check variable values on the fly.
 
-![Demo](https://github.com/0xmemorygrinder/contracts-voyager/blob/master/assets/demo.gif)
+![Demo](https://raw.githubusercontent.com/0xmemorygrinder/contracts-voyager/master/assets/demo.gif)
 
 ## Features
 
@@ -16,7 +16,7 @@ Display the native types properties values directly next to their definition
 
 ## Extension Settings
 
-The settings include the RPC url to use for each chain. They are set by default to public access RPC but it can experiences rate-limiting while loading properties values
+The settings include the RPC url to use for each chain. They are set by default to public access RPC but it might experiences rate-limiting while loading properties values.
 
 Here is an example of the settings :
 
@@ -24,6 +24,14 @@ Here is an example of the settings :
 
 
 ## Release Notes
+
+### 0.1.2
+
+Fixed annimation in readme
+
+### 0.1.1
+
+Added link to open addresses in variable decorations
 
 ### 0.1.0
 

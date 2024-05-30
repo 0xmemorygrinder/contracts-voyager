@@ -3,7 +3,7 @@
   "displayName": "Contracts Voyager",
   "publisher": "0xmemorygrinder",
   "description": "",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "icon": "./assets/logo.png",
   "repository": {
     "type": "git",
